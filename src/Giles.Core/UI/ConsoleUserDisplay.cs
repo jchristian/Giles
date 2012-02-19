@@ -26,5 +26,10 @@ namespace Giles.Core.UI
 
             Console.ForegroundColor = defaultConsoleColor;
         }
+
+        public void Register(IBuildRunner buildRunner)
+        {
+   
+        }
     }
 }

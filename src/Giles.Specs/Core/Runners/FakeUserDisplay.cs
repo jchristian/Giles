@@ -6,6 +6,8 @@ namespace Giles.Specs.Core.Runners
 {
     public class FakeUserDisplay : IUserDisplay
     {
+        public bool WasAskedToRegister;
+        public IBuildRunner TheBuildRunnerThatWasRegistered;
         public IList<string> DisplayMessagesReceived = new List<string>();
         public IList<ExecutionResult> DisplayResultsReceived = new List<ExecutionResult>();
 
@@ -17,6 +19,12 @@ namespace Giles.Specs.Core.Runners
         public void DisplayResult(ExecutionResult result)
         {
             DisplayResultsReceived.Add(result);
+        }
+
+        public void Register(IBuildRunner buildRunner)
+        {
+            WasAskedToRegister = true;
+            TheBuildRunnerThatWasRegistered = buildRunner;
         }
     }
 }

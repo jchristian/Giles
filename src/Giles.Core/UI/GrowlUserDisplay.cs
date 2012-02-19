@@ -9,6 +9,10 @@ namespace Giles.Core.UI
 {
     public class GrowlUserDisplay : IUserDisplay
     {
+        IGrowlAdapter fakeGrowlAdapter;
+
+        public IGrowlAdapter GrowlAdapter { get; set; }
+
         private GrowlConnector growl;
         private NotificationType notificationType;
         private Application application;
@@ -49,10 +53,37 @@ namespace Giles.Core.UI
             growl.Notify(notification);
         }
 
+        public void Register(IBuildRunner buildRunner)
+        {
+            buildRunner.BuildStarted += BuildStarted;
+            buildRunner.BuildCompleted += (sender, args) => { };
+            buildRunner.BuildFailed += (sender, args) => {};
+        }
+
+        public void BuildStarted(object sender, BuildStartedEventArgs args)
+        {
+            const string title = "Giles says...";
+            var text = string.Format(args.Message.ScrubDisplayStringForFormatting(), args.Parameters);
+            var notification = new Notification(application.Name, notificationType.Name, DateTime.Now.Ticks.ToString(), title, text);
+
+            fakeGrowlAdapter.Notify(notification);
+        }
+
         private static Image LoadImage(string resourceName)
         {
             var file = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
             return Image.FromStream(file);
         }
+    }
+
+    public class BuildStartedEventArgs
+    {
+        public string Message { get; set; }
+        public object[] Parameters { get; set; }
+    }
+
+    public interface IGrowlAdapter
+    {
+        void Notify(Notification notification);
     }
 }

@@ -58,6 +58,7 @@
     <Compile Include="Console\Options\CLOptionsSpecs.cs" />
     <Compile Include="Core\Configuration\TestAssemblyFinderSpecs.cs" />
     <Compile Include="Core\Runners\GilesTestListenerSpecs.cs" />
+    <Compile Include="Core\UI\GrowlUserDisplaySpecs.cs" />
     <Compile Include="Core\Utility\FakeFileSystemWatcher.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -76,10 +77,14 @@
     <Reference Include="CommandLine">
       <HintPath>..\..\lib\CommandLineParser\CommandLine.dll</HintPath>
     </Reference>
+    <Reference Include="Growl.Connector, Version=2.0.0.0, Culture=neutral, PublicKeyToken=980c2339411be384, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\Growl.Connector\Growl.Connector.dll</HintPath>
+    </Reference>
     <Reference Include="Machine.Specifications, Version=0.4.10.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\manual\mspec\Machine.Specifications.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="NSubstitute">
       <HintPath>..\..\lib\NSubstitute.1.0.0.0\lib\35\NSubstitute.dll</HintPath>
     </Reference>
@@ -110,6 +115,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Core\Configuration\Resources\Giles.Core.WithMSpec.csproj" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
