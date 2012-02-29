@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Giles.Core.Runners;
-using Giles.Core.UI;
-using Growl.Connector;
+﻿using Giles.Core.UI;
 using Machine.Specifications;
-using Machine.Specifications.Utility;
 
 namespace Giles.Specs.Core.UI
 {
@@ -13,6 +8,9 @@ namespace Giles.Specs.Core.UI
         [Subject(typeof(GrowlUserDisplay))]
         public class when_subscribing_to_build_events
         {
+            static FakeBuildRunner buildRunner;
+            static GrowlUserDisplay subject;
+
             Establish context = () =>
             {
                 buildRunner = new FakeBuildRunner();
@@ -30,86 +28,59 @@ namespace Giles.Specs.Core.UI
 
             It should_subscribe_to_the_build_failed_event = () =>
                 buildRunner.SubscribedToFailedEvent.ShouldBeTrue();
-
-            static FakeBuildRunner buildRunner;
-            static GrowlUserDisplay subject;
         }
 
         [Subject(typeof(GrowlUserDisplay))]
-        public class when_a_build_starts
+        public class with_a_registered_growl_user_display
         {
+            protected static GrowlUserDisplay subject;
+            protected static FakeBuildRunner fakeBuildRunner;
+            protected static FakeGrowlAdapter growlAdapter;
+
             Establish context = () =>
             {
                 fakeBuildRunner = new FakeBuildRunner();
+                growlAdapter = new FakeGrowlAdapter();
                 subject = new GrowlUserDisplay();
                 subject.Register(fakeBuildRunner);
-                subject.GrowlAdapter = new FakeGrowlAdapter();
+                subject.GrowlAdapter = growlAdapter;
             };
+        }
+
+        [Subject(typeof(GrowlUserDisplay))]
+        public class when_a_build_starts : with_a_registered_growl_user_display
+        {
+            static string buildStartedMessage = "Build started";
 
             Because of = () =>
-                fakeBuildRunner.RaiseBuildStartedEvent();
-
-            It should_send_a_growl_notification = () =>
-                growlAdapter.DidReceiveNotification.ShouldBeTrue();
+                fakeBuildRunner.RaiseBuildStartedEvent(buildStartedMessage);
 
             It should_contain_a_message_that_the_build_started = () =>
-                growlAdapter.Messages.ShouldContain("Build Started");
-
-            static GrowlUserDisplay subject;
-            static FakeBuildRunner fakeBuildRunner;
-            static FakeGrowlAdapter growlAdapter;
-        }
-    }
-
-    public class FakeGrowlAdapter : IGrowlAdapter
-    {
-        public bool DidReceiveNotification;
-        public IEnumerable<string> Messages;
-
-        public void Notify(Notification notification)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class FakeBuildRunner : IBuildRunner
-    {
-        IList<Action<object, BuildStartedEventArgs>> buildStartedHandlers = new List<Action<object, BuildStartedEventArgs>>();
-
-        public bool SubscribedToStartedEvent;
-        public bool SubscribedToCompletedEvent;
-        public bool SubscribedToFailedEvent;
-
-        public event Action<object, BuildStartedEventArgs> BuildStarted
-        {
-            add
-            {
-                buildStartedHandlers.Add(value);
-                SubscribedToStartedEvent = true;
-            }
-            remove { }
+                growlAdapter.Messages.ShouldContain(buildStartedMessage);
         }
 
-        public event Action<object, object> BuildCompleted
+        [Subject(typeof(GrowlUserDisplay))]
+        public class when_a_build_completes : with_a_registered_growl_user_display
         {
-            add { SubscribedToCompletedEvent = true; }
-            remove { }
+            static string buildCompletedMessage = "Build completed";
+
+            Because of = () =>
+                fakeBuildRunner.RaiseBuildCompletedEvent(buildCompletedMessage);
+
+            It should_contain_a_message_that_the_build_started = () =>
+                growlAdapter.Messages.ShouldContain(buildCompletedMessage);
         }
 
-        public event Action<object, object> BuildFailed
+        [Subject(typeof(GrowlUserDisplay))]
+        public class when_a_build_fails : with_a_registered_growl_user_display
         {
-            add { SubscribedToFailedEvent = true; }    
-            remove { }
-        }
+            static string buildFailedMessage = "Build failed";
 
-        public bool Run()
-        {
-            throw new System.NotImplementedException();
-        }
+            Because of = () =>
+                fakeBuildRunner.RaiseBuildFailedEvent(buildFailedMessage);
 
-        public void RaiseBuildStartedEvent()
-        {
-            buildStartedHandlers.Each(handler => handler.Invoke(null, null));
+            It should_contain_a_message_that_the_build_failed = () =>
+                growlAdapter.Messages.ShouldContain(buildFailedMessage);
         }
     }
 }

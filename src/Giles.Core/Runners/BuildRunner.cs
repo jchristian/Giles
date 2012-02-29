@@ -8,9 +8,9 @@ namespace Giles.Core.Runners
 {
     public interface IBuildRunner : IRunner
     {
-        event Action<object, BuildStartedEventArgs> BuildStarted;
-        event Action<object, object> BuildCompleted;
-        event Action<object, object> BuildFailed;
+        event EventHandler<BuildActionEventArgs> BuildStarted;
+        event EventHandler<BuildActionEventArgs> BuildCompleted;
+        event EventHandler<BuildActionEventArgs> BuildFailed;
     }
 
     public class BuildRunner : IBuildRunner
@@ -18,37 +18,32 @@ namespace Giles.Core.Runners
         readonly GilesConfig config;
         readonly Settings settings;
 
-        public event Action<object, BuildStartedEventArgs> BuildStarted = delegate { };
-        public event Action<object, object> BuildCompleted = delegate { };
-        public event Action<object, object> BuildFailed = delegate {};
+        public event EventHandler<BuildActionEventArgs> BuildStarted = delegate { };
+        public event EventHandler<BuildActionEventArgs> BuildCompleted = delegate { };
+        public event EventHandler<BuildActionEventArgs> BuildFailed = delegate { };
 
         public BuildRunner(GilesConfig config, Settings settings)
         {
             this.config = config;
             this.settings = settings;
-            this.config.UserDisplay.Each(display => display.Register(this));
+            this.config.UserDisplays.Each(display => display.Register(this));
         }
 
         public bool Run()
         {
             var watch = new Stopwatch();
-            config.UserDisplay.Each(display => display.DisplayMessage("Building..."));
 
-            BuildStarted(this, null);
+            BuildStarted(this, new BuildActionEventArgs("Building..."));
 
             watch.Start();
             var result = CommandProcessExecutor.Execute(settings.MsBuild, "\"" + config.SolutionPath + "\"");
             watch.Stop();
-            
-            var message = FormatBuildMessages(watch, result);
 
-            config.UserDisplay.Each(display => display.DisplayMessage(message, watch.Elapsed.TotalSeconds));
-            BuildCompleted(this, null);
-
-            if (result.ExitCode != 0)
-            {
-                BuildFailed(this, null);
-            }
+            var args = new BuildActionEventArgs(FormatBuildMessages(watch, result), watch.Elapsed.TotalSeconds);
+            if (result.ExitCode == 0)
+                BuildCompleted(this, args);
+            else
+                BuildFailed(this, args);
             return result.ExitCode == 0;
         }
 

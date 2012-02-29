@@ -29,7 +29,14 @@ namespace Giles.Core.UI
 
         public void Register(IBuildRunner buildRunner)
         {
-   
+            buildRunner.BuildStarted += DisplayBuildResult;
+            buildRunner.BuildCompleted += DisplayBuildResult;
+            buildRunner.BuildFailed += DisplayBuildResult;
+        }
+
+        void DisplayBuildResult(object sender, BuildActionEventArgs e)
+        {
+            Console.WriteLine(e.Message.ScrubDisplayStringForFormatting(), e.Parameters);
         }
     }
 }

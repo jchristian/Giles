@@ -20,8 +20,8 @@ namespace Giles.Core.Configuration
             config.TestAssemblies = testAssemblies;
             config.SolutionPath = "" + solutionPath + "";
 
-            config.UserDisplay.Add(new ConsoleUserDisplay());
-            config.UserDisplay.Add(new GrowlUserDisplay());
+            config.UserDisplays.Add(new ConsoleUserDisplay());
+            config.UserDisplays.Add(new GrowlUserDisplay());
             return config;
         }
     }

@@ -52,7 +52,7 @@ namespace Giles.Specs.Core.Configuration
             config.SolutionPath.ShouldEqual(solutionPath);
 
         It should_configure_the_console_user_display = () =>
-            config.UserDisplay.Count().ShouldBeGreaterThan(0);
+            config.UserDisplays.Count().ShouldBeGreaterThan(0);
     }
 
 }

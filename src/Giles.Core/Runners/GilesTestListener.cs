@@ -67,7 +67,7 @@ namespace Giles.Core.Runners
         {
             if (testRunnerResults.Count == 0)
             {
-                config.UserDisplay.ToList().ForEach(display => display.DisplayResult(new ExecutionResult{ExitCode = 1, Output = "Something went wrong, check the Giles console window for more details", Runner = ""}));
+                config.UserDisplays.ToList().ForEach(display => display.DisplayResult(new ExecutionResult{ExitCode = 1, Output = "Something went wrong, check the Giles console window for more details", Runner = ""}));
                 return;
             }
 
@@ -80,10 +80,10 @@ namespace Giles.Core.Runners
                     Runner = string.Empty
                 };
 
-            if (config.UserDisplay.Count() == 0)
-                config.UserDisplay = new List<IUserDisplay> { new ConsoleUserDisplay() };
+            if (config.UserDisplays.Count() == 0)
+                config.UserDisplays = new List<IUserDisplay> { new ConsoleUserDisplay() };
 
-            config.UserDisplay.ToList().ForEach(display => display.DisplayResult(result));
+            config.UserDisplays.ToList().ForEach(display => display.DisplayResult(result));
         }
 
         StringBuilder AggregateTestRunnerResults()

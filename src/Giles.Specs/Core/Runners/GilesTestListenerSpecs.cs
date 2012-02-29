@@ -21,7 +21,7 @@ namespace Giles.Specs.Core.Runners
         {
             fakeUserDisplay = new FakeUserDisplay();
             config = new GilesConfig();
-            config.UserDisplay.Add(fakeUserDisplay);
+            config.UserDisplays.Add(fakeUserDisplay);
 
             consoleOutputBuffer = new StringBuilder();
             consoleOutputWriter = new StringWriter(consoleOutputBuffer);

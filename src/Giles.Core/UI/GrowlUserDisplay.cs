@@ -2,71 +2,43 @@ using System;
 using System.Drawing;
 using System.Reflection;
 using Giles.Core.Runners;
-using Growl.Connector;
 using Growl.CoreLibrary;
 
 namespace Giles.Core.UI
 {
     public class GrowlUserDisplay : IUserDisplay
     {
-        IGrowlAdapter fakeGrowlAdapter;
-
         public IGrowlAdapter GrowlAdapter { get; set; }
-
-        private GrowlConnector growl;
-        private NotificationType notificationType;
-        private Application application;
-        private const string successImage = "Giles.Core.Resources.checkmark.png";
-        private const string failureImage = "Giles.Core.Resources.stop.png";
 
         public GrowlUserDisplay()
         {
-            Initialize();
+            GrowlAdapter = new GrowlAdapter();
         }
 
-        void Initialize()
-        {
-            notificationType = new NotificationType("BUILD_RESULT_NOTIFICATION", "Sample Notification");
-            application = new Application("Giles");
-            growl = new GrowlConnector
-                        {
-                            EncryptionAlgorithm = Cryptography.SymmetricAlgorithmType.PlainText
-                        };
-
-
-            growl.Register(application, new[] { notificationType });
-        }
-
-        public void DisplayMessage(string message, params object[] parameters)
-        {
-            const string title = "Giles says...";
-            var text = string.Format(message.ScrubDisplayStringForFormatting(), parameters);
-            var notification = new Notification(application.Name, notificationType.Name, DateTime.Now.Ticks.ToString(), title, text);
-            growl.Notify(notification);
-        }
+        private const string successImage = "Giles.Core.Resources.checkmark.png";
+        private const string failureImage = "Giles.Core.Resources.stop.png";
 
         public void DisplayResult(ExecutionResult result)
         {
             var title = result.ExitCode == 0 ? "Success!" : "Failures!";
             Resource icon = result.ExitCode == 0 ? LoadImage(successImage) : LoadImage(failureImage);
-            var notification = new Notification(application.Name, notificationType.Name, DateTime.Now.Ticks.ToString(), title, result.Output) { Icon = icon };
-            growl.Notify(notification);
+
+            GrowlAdapter.Notify(DateTime.Now.Ticks.ToString(), title, result.Output, icon);
         }
 
         public void Register(IBuildRunner buildRunner)
         {
-            buildRunner.BuildStarted += BuildStarted;
-            buildRunner.BuildCompleted += (sender, args) => { };
-            buildRunner.BuildFailed += (sender, args) => {};
+            buildRunner.BuildStarted += DisplayBuildResult;
+            buildRunner.BuildCompleted += DisplayBuildResult;
+            buildRunner.BuildFailed += DisplayBuildResult;
         }
 
-        public void BuildStarted(object sender, BuildStartedEventArgs args)
+        private void DisplayBuildResult(object sender, BuildActionEventArgs args)
         {
             const string title = "Giles says...";
             var text = string.Format(args.Message.ScrubDisplayStringForFormatting(), args.Parameters);
-            var notification = new Notification(application.Name, notificationType.Name, DateTime.Now.Ticks.ToString(), title, text);
 
-            fakeGrowlAdapter.Notify(notification);
+            GrowlAdapter.Notify(DateTime.Now.Ticks.ToString(), title, text);
         }
 
         private static Image LoadImage(string resourceName)
@@ -74,16 +46,5 @@ namespace Giles.Core.UI
             var file = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
             return Image.FromStream(file);
         }
-    }
-
-    public class BuildStartedEventArgs
-    {
-        public string Message { get; set; }
-        public object[] Parameters { get; set; }
-    }
-
-    public interface IGrowlAdapter
-    {
-        void Notify(Notification notification);
     }
 }
