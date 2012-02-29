@@ -11,21 +11,6 @@ namespace Giles.Core.UI
         {
             defaultConsoleColor = Console.ForegroundColor;
         }
-        public void DisplayMessage(string message, params object[] parameters)
-        {
-            Console.WriteLine(message.ScrubDisplayStringForFormatting(), parameters);
-        }
-
-        public void DisplayResult(ExecutionResult result)
-        {
-            Console.WriteLine("\n\n======= {0} TEST RUNNER RESULTS =======", result.Runner);
-            Console.ForegroundColor = result.ExitCode != 0 ?
-                                      ConsoleColor.Red : defaultConsoleColor;
-
-            Console.WriteLine(result.Output);
-
-            Console.ForegroundColor = defaultConsoleColor;
-        }
 
         public void Register(IBuildRunner buildRunner)
         {
@@ -34,9 +19,26 @@ namespace Giles.Core.UI
             buildRunner.BuildFailed += DisplayBuildResult;
         }
 
-        void DisplayBuildResult(object sender, BuildActionEventArgs e)
+        public void Register(GilesTestListener testListener)
         {
-            Console.WriteLine(e.Message.ScrubDisplayStringForFormatting(), e.Parameters);
+            testListener.TestFailure += DisplayTestResult;
+            testListener.TestsCompleted += DisplayTestResult;
+        }
+
+        private void DisplayTestResult(object sender, TestActionEventArgs args)
+        {
+            Console.WriteLine("\n\n======= {0} TEST RUNNER RESULTS =======", args.Result.Runner);
+            Console.ForegroundColor = args.Result.ExitCode != 0 ?
+                                      ConsoleColor.Red : defaultConsoleColor;
+
+            Console.WriteLine(args.Result.Output);
+
+            Console.ForegroundColor = defaultConsoleColor;
+        }
+
+        private void DisplayBuildResult(object sender, BuildActionEventArgs args)
+        {
+            Console.WriteLine(args.Message.ScrubDisplayStringForFormatting(), args.Parameters);
         }
     }
 }

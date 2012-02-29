@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -61,7 +60,7 @@ namespace Giles.Specs.Core.Runners
     public class when_displaying_the_results : with_a_giles_test_listener
     {
         Establish context = () =>
-            listener.AddTestSummary(new TestResult() { Message = testMessage, TestRunner = "RakeFunner", State = TestState.Failed });
+            listener.AddTestSummary(new TestResult { Message = testMessage, TestRunner = "RakeFunner", State = TestState.Failed });
 
         Because of = () =>
             listener.DisplayResults();
@@ -104,5 +103,15 @@ namespace Giles.Specs.Core.Runners
         It should_display_the_failing_test_message = () =>
             consoleOutputBuffer.ToString().ShouldContain(testMessage);
 
+    }
+
+    [Subject(typeof(BuildRunner))]
+    public class when_creating_the_test_listener : with_a_giles_test_listener
+    {
+        It should_register_the_user_display_with_the_builder_runner = () =>
+        {
+            fakeUserDisplay.WasAskedToRegisterTheTestListener.ShouldBeTrue();
+            fakeUserDisplay.TheTestListenerThatWasRegistered.ShouldEqual(listener);
+        };
     }
 }

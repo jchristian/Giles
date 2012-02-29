@@ -78,11 +78,13 @@
     <Compile Include="Runners\GilesTestListener.cs" />
     <Compile Include="Runners\IFrameworkRunner.cs" />
     <Compile Include="Runners\IRunner.cs" />
+    <Compile Include="Runners\TestActionEventArgs.cs" />
     <Compile Include="Runners\TestFrameworkInspector.cs" />
     <Compile Include="Runners\TestResult.cs" />
     <Compile Include="Runners\TestFrameworkResolver.cs" />
     <Compile Include="UI\BuildActionEventArgs.cs" />
     <Compile Include="UI\DisplayScrubber.cs" />
+    <Compile Include="UI\GrowlAdapter.cs" />
     <Compile Include="Utility\TypeLoader.cs" />
     <Compile Include="UI\ConsoleUserDisplay.cs" />
     <Compile Include="UI\GrowlUserDisplay.cs" />

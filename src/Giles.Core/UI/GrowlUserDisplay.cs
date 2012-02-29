@@ -18,19 +18,17 @@ namespace Giles.Core.UI
         private const string successImage = "Giles.Core.Resources.checkmark.png";
         private const string failureImage = "Giles.Core.Resources.stop.png";
 
-        public void DisplayResult(ExecutionResult result)
-        {
-            var title = result.ExitCode == 0 ? "Success!" : "Failures!";
-            Resource icon = result.ExitCode == 0 ? LoadImage(successImage) : LoadImage(failureImage);
-
-            GrowlAdapter.Notify(DateTime.Now.Ticks.ToString(), title, result.Output, icon);
-        }
-
         public void Register(IBuildRunner buildRunner)
         {
             buildRunner.BuildStarted += DisplayBuildResult;
             buildRunner.BuildCompleted += DisplayBuildResult;
             buildRunner.BuildFailed += DisplayBuildResult;
+        }
+
+        public void Register(GilesTestListener testListener)
+        {
+            testListener.TestFailure += DisplayTestResult;
+            testListener.TestsCompleted += DisplayTestResult;
         }
 
         private void DisplayBuildResult(object sender, BuildActionEventArgs args)
@@ -39,6 +37,14 @@ namespace Giles.Core.UI
             var text = string.Format(args.Message.ScrubDisplayStringForFormatting(), args.Parameters);
 
             GrowlAdapter.Notify(DateTime.Now.Ticks.ToString(), title, text);
+        }
+
+        private void DisplayTestResult(object sender, TestActionEventArgs args)
+        {
+            var title = args.Result.ExitCode == 0 ? "Success!" : "Failures!";
+            Resource icon = args.Result.ExitCode == 0 ? LoadImage(successImage) : LoadImage(failureImage);
+
+            GrowlAdapter.Notify(DateTime.Now.Ticks.ToString(), title, args.Result.Output, icon);
         }
 
         private static Image LoadImage(string resourceName)

@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Giles.Core.Configuration;
-using Giles.Core.UI;
 using Giles.Core.Utility;
 
 namespace Giles.Core.Runners
 {
     public class GilesTestListener
     {
-        readonly GilesConfig config;
+        public virtual event EventHandler<TestActionEventArgs> TestFailure = delegate { };
+        public virtual event EventHandler<TestActionEventArgs> TestsCompleted = delegate { };
+
         readonly Dictionary<string, StringBuilder> output = new Dictionary<string, StringBuilder>();
         readonly Dictionary<TestState, int> totalResults;
         readonly Dictionary<string, Dictionary<TestState, int>> testRunnerResults;
@@ -24,7 +25,7 @@ namespace Giles.Core.Runners
 
         public GilesTestListener(GilesConfig config) : this()
         {
-            this.config = config;
+            config.UserDisplays.Each(display => display.Register(this));
         }
 
         static Dictionary<TestState, int> SetupTestResults()
@@ -67,7 +68,7 @@ namespace Giles.Core.Runners
         {
             if (testRunnerResults.Count == 0)
             {
-                config.UserDisplays.ToList().ForEach(display => display.DisplayResult(new ExecutionResult{ExitCode = 1, Output = "Something went wrong, check the Giles console window for more details", Runner = ""}));
+                TestFailure(this, new TestActionEventArgs(new ExecutionResult{ExitCode = 1, Output = "Something went wrong, check the Giles console window for more details", Runner = ""}));
                 return;
             }
 
@@ -80,10 +81,7 @@ namespace Giles.Core.Runners
                     Runner = string.Empty
                 };
 
-            if (config.UserDisplays.Count() == 0)
-                config.UserDisplays = new List<IUserDisplay> { new ConsoleUserDisplay() };
-
-            config.UserDisplays.ToList().ForEach(display => display.DisplayResult(result));
+            TestsCompleted(this, new TestActionEventArgs(result));
         }
 
         StringBuilder AggregateTestRunnerResults()
